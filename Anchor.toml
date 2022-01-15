@@ -1,0 +1,12 @@
+[programs.devnet]
+solana_of = "CaGtvV7d6nuih4gFisrJ9FJoY9kXeC7x4nWhdDzsrxRa"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "/home/toplus/.config/solana/id.json"
+
+[scripts]
+test = "node tests/solana-of.js" 
