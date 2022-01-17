@@ -30,7 +30,22 @@ pub mod solana_of {
       Ok(())
     }
 
-    pub fn update_user_info(ctx: Context<UpdateUserInfo>, name: String, image: String, bio: String, month_price: u32, creator: bool) -> ProgramResult {
+    pub fn update_user_info(ctx: Context<UpdateUserInfo>, image: String, bio: String, month_price: u32) -> ProgramResult {
+        let base_account = &mut ctx.accounts.base_account;
+        let user = &mut ctx.accounts.user;
+   
+        if base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
+            let index = base_account.users.iter().position(|u| u.user_address == *user.to_account_info().key).unwrap();
+             
+            base_account.users[index].image = image.to_string();
+            base_account.users[index].bio = bio.to_string();
+            base_account.users[index].month_price = month_price as u64; 
+        }
+        
+        Ok(())
+    }
+
+    pub fn become_creator(ctx: Context<BecomeCreator>, name: String, image: String, bio: String, month_price: u32) -> ProgramResult {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
    
@@ -41,7 +56,7 @@ pub mod solana_of {
             base_account.users[index].image = image.to_string();
             base_account.users[index].bio = bio.to_string();
             base_account.users[index].month_price = month_price as u64;
-            base_account.users[index].creator = creator;
+            base_account.users[index].creator = true;
         }
         
         Ok(())
@@ -155,6 +170,14 @@ pub struct AddUser<'info> {
 
 #[derive(Accounts)]
 pub struct UpdateUserInfo<'info> {
+  #[account(mut)]
+  pub base_account: Account<'info, BaseAccount>,
+  #[account(mut)]
+  pub user: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct BecomeCreator<'info> {
   #[account(mut)]
   pub base_account: Account<'info, BaseAccount>,
   #[account(mut)]

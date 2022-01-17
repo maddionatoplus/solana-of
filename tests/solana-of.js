@@ -35,9 +35,22 @@ const main = async() => {
   console.log('👀 Users', account.users.length)
   console.log('\t- ', account.users[0])
 
+  console.log("\nBecome Creator\n")
+  
+  await program.rpc.becomeCreator("toplus", "image", "Top content Co-Founder", 15, {
+    accounts: {
+      baseAccount: baseAccount.publicKey,
+      user: provider.wallet.publicKey,
+    },
+  });
+  
+  account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+  console.log('👀 Users', account.users.length)
+  console.log('\t- ', account.users[0])
+
   console.log("\nUPDATE USER INFO\n")
   
-  await program.rpc.updateUserInfo("toplus", "image", "Top content N00B", 105, true, {
+  await program.rpc.updateUserInfo("image2", "Top content N00B", 105, {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
