@@ -11,15 +11,17 @@ pub mod solana_of {
         Ok(())
     }
  
-    pub fn add_user(ctx: Context<AddUser>, name: String, bio: String, month_price: u32) -> ProgramResult {
+    pub fn add_user(ctx: Context<AddUser>) -> ProgramResult {
       let base_account = &mut ctx.accounts.base_account;
       let user = &mut ctx.accounts.user;
    
       let user = User {
         user_address: *user.to_account_info().key,
-        name: name.to_string(),
-        bio: bio.to_string(), 
-        month_price: month_price as u64,
+        image: "".to_string(),
+        name: "".to_string(),
+        bio: "".to_string(), 
+        month_price: 0,
+        creator: false,
         subscriptions: [].to_vec(),
         contents: [].to_vec(),
       };
@@ -28,15 +30,18 @@ pub mod solana_of {
       Ok(())
     }
 
-    pub fn update_user_info(ctx: Context<UpdateUserInfo>, bio: String, month_price: u32) -> ProgramResult {
+    pub fn update_user_info(ctx: Context<UpdateUserInfo>, name: String, image: String, bio: String, month_price: u32, creator: bool) -> ProgramResult {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
    
         if base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
             let index = base_account.users.iter().position(|u| u.user_address == *user.to_account_info().key).unwrap();
             
+            base_account.users[index].name = name.to_string();
+            base_account.users[index].image = image.to_string();
             base_account.users[index].bio = bio.to_string();
             base_account.users[index].month_price = month_price as u64;
+            base_account.users[index].creator = creator;
         }
         
         Ok(())
@@ -54,6 +59,7 @@ pub mod solana_of {
                 link: link.to_string(),
                 description: description.to_string(),
                 votes: 0,
+                user_votes: [].to_vec(),
                 date: Clock::get().unwrap().unix_timestamp,
             };
             
@@ -116,12 +122,14 @@ pub mod solana_of {
     pub fn up_vote(ctx: Context<UpVote>, link: String) -> ProgramResult {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
+        let voter = &mut ctx.accounts.voter;
         
         if base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
             let user_index = base_account.users.iter().position(|u| u.user_address == *user.to_account_info().key).unwrap();
             let content_index = base_account.users[user_index].contents.iter().position(|c| c.link == link).unwrap();
 
             base_account.users[user_index].contents[content_index].votes += 1;
+            base_account.users[user_index].contents[content_index].user_votes.push(*voter.to_account_info().key);
         }
         
         Ok(())
@@ -177,6 +185,8 @@ pub struct UpVote<'info> {
   pub base_account: Account<'info, BaseAccount>,
   #[account(mut)]
   pub user: AccountInfo<'info>,
+  #[account(mut)]
+  pub voter: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -195,6 +205,7 @@ pub struct Content {
     pub link: String,
     pub description: String,
     pub votes: u64,
+    pub user_votes: Vec<Pubkey>,
     pub date: i64,
 }
 
@@ -207,6 +218,8 @@ pub struct Subscription {
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct User {
     pub user_address: Pubkey,
+    pub creator: bool, 
+    pub image: String,
     pub name: String,
     pub bio: String, 
     pub month_price: u64,

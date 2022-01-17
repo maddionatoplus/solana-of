@@ -24,7 +24,7 @@ const main = async() => {
 
   console.log("\nADD USER: toplus\n")
   
-  await program.rpc.addUser("toplus", "Top content founder", 100, {
+  await program.rpc.addUser({
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
@@ -37,7 +37,7 @@ const main = async() => {
 
   console.log("\nUPDATE USER INFO\n")
   
-  await program.rpc.updateUserInfo( "Top content N00B",105, {
+  await program.rpc.updateUserInfo("toplus", "image", "Top content N00B", 105, true, {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
@@ -63,6 +63,7 @@ const main = async() => {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
+      voter: provider.wallet.publicKey,
     },
   });
   
