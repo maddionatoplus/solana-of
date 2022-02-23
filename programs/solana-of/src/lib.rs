@@ -1,17 +1,17 @@
-use anchor_lang::prelude::*;  
+use anchor_lang::prelude::*;
 
 declare_id!("CaGtvV7d6nuih4gFisrJ9FJoY9kXeC7x4nWhdDzsrxRa");
 
 #[program]
 pub mod solana_of {
     use super::*;
-    pub fn initialize(ctx: Context<Initialize>) -> ProgramResult {
+    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         base_account.users = [].to_vec(); 
         Ok(())
     }
  
-    pub fn add_user(ctx: Context<AddUser>) -> ProgramResult {
+    pub fn add_user(ctx: Context<AddUser>) -> Result<()> {
       let base_account = &mut ctx.accounts.base_account;
       let user = &mut ctx.accounts.user;
    
@@ -20,7 +20,8 @@ pub mod solana_of {
         image: "".to_string(),
         name: "".to_string(),
         bio: "".to_string(), 
-        month_price: 0,
+        month_price: 1,
+        total: 0,
         creator: false,
         subscriptions: [].to_vec(),
         contents: [].to_vec(),
@@ -30,13 +31,14 @@ pub mod solana_of {
       Ok(())
     }
 
-    pub fn update_user_info(ctx: Context<UpdateUserInfo>, image: String, bio: String, month_price: u32) -> ProgramResult {
+    pub fn update_user_info(ctx: Context<UpdateUserInfo>, name:String, image: String, bio: String, month_price: u32) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
    
         if base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
             let index = base_account.users.iter().position(|u| u.user_address == *user.to_account_info().key).unwrap();
              
+            base_account.users[index].name = name.to_string();
             base_account.users[index].image = image.to_string();
             base_account.users[index].bio = bio.to_string();
             base_account.users[index].month_price = month_price as u64; 
@@ -45,7 +47,7 @@ pub mod solana_of {
         Ok(())
     }
 
-    pub fn become_creator(ctx: Context<BecomeCreator>, name: String, image: String, bio: String, month_price: u32) -> ProgramResult {
+    pub fn become_creator(ctx: Context<BecomeCreator>, name: String, image: String, bio: String, month_price: u32) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
    
@@ -62,7 +64,7 @@ pub mod solana_of {
         Ok(())
     }
 
-    pub fn add_content(ctx: Context<AddContent>, link: String, description: String) -> ProgramResult {
+    pub fn add_content(ctx: Context<AddContent>, link: String, title: String, description: String) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
    
@@ -72,6 +74,7 @@ pub mod solana_of {
             let content = Content {
                 user_address: *user.to_account_info().key,
                 link: link.to_string(),
+                title: title.to_string(),
                 description: description.to_string(),
                 votes: 0,
                 user_votes: [].to_vec(),
@@ -84,7 +87,7 @@ pub mod solana_of {
         Ok(())
     }
 
-    pub fn add_subscription(ctx: Context<AddSubscription>) -> ProgramResult {
+    pub fn add_subscription(ctx: Context<AddSubscription>) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let subscriber = &mut ctx.accounts.subscriber;
         let subscribed_user = &mut ctx.accounts.subscribed_user;
@@ -114,12 +117,13 @@ pub mod solana_of {
             };
             
             base_account.users[index].subscriptions.push(subscription);
+            base_account.users[index].total = base_account.users[index].total + base_account.users[index].month_price;
         }
         
         Ok(())
     }
 
-    pub fn remove_subscription(ctx: Context<RemoveSubscription>) -> ProgramResult {
+    pub fn remove_subscription(ctx: Context<RemoveSubscription>) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let subscriber = &mut ctx.accounts.subscriber;
         let unsubscribed_user = &mut ctx.accounts.unsubscribed_user;
@@ -134,7 +138,7 @@ pub mod solana_of {
         Ok(())
     }
 
-    pub fn up_vote(ctx: Context<UpVote>, link: String) -> ProgramResult {
+    pub fn up_vote(ctx: Context<UpVote>, link: String) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
         let voter = &mut ctx.accounts.voter;
@@ -226,6 +230,7 @@ pub struct RemoveSubscription<'info> {
 pub struct Content {
     pub user_address: Pubkey,
     pub link: String,
+    pub title: String,
     pub description: String,
     pub votes: u64,
     pub user_votes: Vec<Pubkey>,
@@ -246,6 +251,7 @@ pub struct User {
     pub name: String,
     pub bio: String, 
     pub month_price: u64,
+    pub total: u64,
     pub contents: Vec<Content>,
     pub subscriptions: Vec<Subscription>,
 }

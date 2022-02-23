@@ -50,7 +50,7 @@ const main = async() => {
 
   console.log("\nUPDATE USER INFO\n")
   
-  await program.rpc.updateUserInfo("image2", "Top content N00B", 105, {
+  await program.rpc.updateUserInfo("toplus90", "image2", "Top content N00B", 105, {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
@@ -63,7 +63,7 @@ const main = async() => {
   
   console.log("\nADD toplus first content\n")
   
-  await program.rpc.addContent("first content", "first description", {
+  await program.rpc.addContent("first content", "first title", "first description", {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
@@ -99,6 +99,11 @@ const main = async() => {
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);
   console.log('\t Subscriptions', account.users[0].subscriptions.length)
   console.log('', account.users[0].subscriptions[0])
+
+  
+  account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+  console.log('👀 Users', account.users.length)
+  console.log('\t- ', account.users[0])
   
   console.log("\REMOVE toplus subscription to: " + to + "\n")
   
