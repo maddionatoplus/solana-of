@@ -25,6 +25,7 @@ pub mod solana_of {
         creator: false,
         subscriptions: [].to_vec(),
         contents: [].to_vec(),
+        followers: [].to_vec(),
       };
           
       base_account.users.push(user);
@@ -90,49 +91,52 @@ pub mod solana_of {
     pub fn add_subscription(ctx: Context<AddSubscription>) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let subscriber = &mut ctx.accounts.subscriber;
-        let subscribed_user = &mut ctx.accounts.subscribed_user;
+        let creator = &mut ctx.accounts.creator;
    
         if base_account.users.iter().any(|u| u.user_address == *subscriber.to_account_info().key) {
             let index = base_account.users.iter().position(|u| u.user_address == *subscriber.to_account_info().key).unwrap();
-
-            /*
-                let ix = anchor_lang::solana_program::system_instruction::transfer(
-                    &subscriber.key(),
-                    &subscribed_user.key(),
-                    1,
-                );
-
-                let result = anchor_lang::solana_program::program::invoke(
-                    &ix,
-                    &[
-                        subscriber.to_account_info(),
-                        subscribed_user.to_account_info(),
-                    ],
-                );
-            */
-
+            
             let subscription = Subscription {
-                user_address: subscribed_user.key(),
+                user_address: creator.key(),
                 subscription_end: Clock::get().unwrap().unix_timestamp + 30 * 86400,
             };
-            
+
             base_account.users[index].subscriptions.push(subscription);
-            base_account.users[index].total = base_account.users[index].total + base_account.users[index].month_price;
+            
+            if base_account.users.iter().any(|u| u.user_address == *creator.to_account_info().key) {
+                
+
+                let creator_index = base_account.users.iter().position(|u| u.user_address == *creator.to_account_info().key).unwrap();
+    
+
+                let follower_subscription = Subscription {
+                    user_address: subscriber.key(),
+                    subscription_end: Clock::get().unwrap().unix_timestamp + 30 * 86400, 
+                };
+
+                base_account.users[creator_index].total = base_account.users[index].total + base_account.users[index].month_price;
+                base_account.users[creator_index].followers.push(follower_subscription);
+            }
         }
-        
+
         Ok(())
     }
 
     pub fn remove_subscription(ctx: Context<RemoveSubscription>) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let subscriber = &mut ctx.accounts.subscriber;
-        let unsubscribed_user = &mut ctx.accounts.unsubscribed_user;
+        let creator = &mut ctx.accounts.creator;
    
         if base_account.users.iter().any(|u| u.user_address == *subscriber.to_account_info().key) {
             let user_index = base_account.users.iter().position(|u| u.user_address == *subscriber.to_account_info().key).unwrap();
-            let subscription_index = base_account.users[user_index].subscriptions.iter().position(|s| s.user_address == * unsubscribed_user.to_account_info().key).unwrap();
-
+            let subscription_index = base_account.users[user_index].subscriptions.iter().position(|s| s.user_address == *creator.to_account_info().key).unwrap();
             base_account.users[user_index].subscriptions.remove(subscription_index);
+            
+            if base_account.users.iter().any(|u| u.user_address == *creator.to_account_info().key) {
+                let creator_index = base_account.users.iter().position(|u| u.user_address == *creator.to_account_info().key).unwrap();
+                let subscription_index = base_account.users[creator_index].followers.iter().position(|s| s.user_address == *subscriber.to_account_info().key).unwrap();
+                base_account.users[creator_index].followers.remove(subscription_index);
+            }
         }
         
         Ok(())
@@ -203,7 +207,7 @@ pub struct AddSubscription<'info> {
   #[account(mut)]
   pub subscriber: Signer<'info>,
   #[account(mut)]
-  pub subscribed_user: AccountInfo<'info>,
+  pub creator: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -223,7 +227,7 @@ pub struct RemoveSubscription<'info> {
   #[account(mut)]
   pub subscriber: Signer<'info>,
   #[account(mut)]
-  pub unsubscribed_user: AccountInfo<'info>,
+  pub creator: AccountInfo<'info>,
 }
 
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
@@ -247,13 +251,14 @@ pub struct Subscription {
 pub struct User {
     pub user_address: Pubkey,
     pub creator: bool, 
-    pub image: String,
-    pub name: String,
+    pub image: String, 
     pub bio: String, 
     pub month_price: u64,
     pub total: u64,
     pub contents: Vec<Content>,
     pub subscriptions: Vec<Subscription>,
+    pub followers: Vec<Subscription>,
+    pub name: String,
 }
 
 #[account]

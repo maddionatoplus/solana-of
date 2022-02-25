@@ -30,6 +30,8 @@ const main = async() => {
       user: provider.wallet.publicKey,
     },
   });
+
+  const to = "A6ZMMWnMkENd91DoBwP2JoFcNUKCHt632NeRa3Rxbsjc";
   
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);
   console.log('👀 Users', account.users.length)
@@ -42,7 +44,7 @@ const main = async() => {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
     },
-  });
+  }); 
   
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);
   console.log('👀 Users', account.users.length)
@@ -70,7 +72,7 @@ const main = async() => {
     },
   });
   
-  console.log("\n vote toplus first content\n")
+  console.log("\nvote toplus first content\n")
   
   await program.rpc.upVote("first content",{
     accounts: {
@@ -84,15 +86,13 @@ const main = async() => {
   console.log('\t Contents', account.users[0].contents.length)
   console.log('', account.users[0].contents[0])
   
-  const to = "A6ZMMWnMkENd91DoBwP2JoFcNUKCHt632NeRa3Rxbsjc";
-  
   console.log("\nADD toplus subscription to: " + to + "\n")
   
   await program.rpc.addSubscription({
     accounts: {
       baseAccount: baseAccount.publicKey,
       subscriber: provider.wallet.publicKey,
-      subscribedUser: to
+      creator: to
     },
   });
   
@@ -103,7 +103,7 @@ const main = async() => {
   
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);
   console.log('👀 Users', account.users.length)
-  console.log('\t- ', account.users[0])
+  console.log('\t- ', account.users[0])  
   
   console.log("\REMOVE toplus subscription to: " + to + "\n")
   
@@ -111,12 +111,13 @@ const main = async() => {
     accounts: {
       baseAccount: baseAccount.publicKey,
       subscriber: provider.wallet.publicKey,
-      unsubscribedUser: to
+      creator: to
     },
   });
   
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);
   console.log('\t Subscriptions', account.users[0].subscriptions.length) 
+  console.log('\t- ', account.users[0])  
 
 }
 
