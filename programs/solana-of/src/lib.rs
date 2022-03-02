@@ -51,6 +51,23 @@ pub mod solana_of {
     pub fn become_creator(ctx: Context<BecomeCreator>, name: String, image: String, bio: String, month_price: u32) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
+
+        if !base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
+            let user = User {
+                user_address: *user.to_account_info().key,
+                image: "".to_string(),
+                name: "".to_string(),
+                bio: "".to_string(), 
+                month_price: 1,
+                total: 0,
+                creator: false,
+                subscriptions: [].to_vec(),
+                contents: [].to_vec(),
+                followers: [].to_vec(),
+              };
+                  
+              base_account.users.push(user);
+        }
    
         if base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
             let index = base_account.users.iter().position(|u| u.user_address == *user.to_account_info().key).unwrap();
@@ -92,6 +109,23 @@ pub mod solana_of {
         let base_account = &mut ctx.accounts.base_account;
         let subscriber = &mut ctx.accounts.subscriber;
         let creator = &mut ctx.accounts.creator;
+
+        if !base_account.users.iter().any(|u| u.user_address == *subscriber.to_account_info().key) {
+            let user = User {
+                user_address: *subscriber.to_account_info().key,
+                image: "".to_string(),
+                name: "".to_string(),
+                bio: "".to_string(), 
+                month_price: 1,
+                total: 0,
+                creator: false,
+                subscriptions: [].to_vec(),
+                contents: [].to_vec(),
+                followers: [].to_vec(),
+              };
+                  
+              base_account.users.push(user);
+        }
    
         if base_account.users.iter().any(|u| u.user_address == *subscriber.to_account_info().key) {
             let index = base_account.users.iter().position(|u| u.user_address == *subscriber.to_account_info().key).unwrap();
