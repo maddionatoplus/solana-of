@@ -39,7 +39,7 @@ const main = async() => {
 
   console.log("\nBecome Creator\n")
   
-  await program.rpc.becomeCreator("toplus", "image", "Top content Co-Founder", 15, {
+  await program.rpc.becomeCreator("toplus", "image", "cover", "Top content Co-Founder", 15, {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,
@@ -52,7 +52,7 @@ const main = async() => {
 
   console.log("\nUPDATE USER INFO\n")
   
-  await program.rpc.updateUserInfo("toplus90", "image2", "Top content N00B", 105, {
+  await program.rpc.updateUserInfo("toplus90", "image2", "cover2", "Top content N00B", 105, {
     accounts: {
       baseAccount: baseAccount.publicKey,
       user: provider.wallet.publicKey,

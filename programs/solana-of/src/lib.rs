@@ -18,6 +18,7 @@ pub mod solana_of {
       let user = User {
         user_address: *user.to_account_info().key,
         image: "".to_string(),
+        cover: "".to_string(),
         name: "".to_string(),
         bio: "".to_string(), 
         month_price: 1,
@@ -32,7 +33,7 @@ pub mod solana_of {
       Ok(())
     }
 
-    pub fn update_user_info(ctx: Context<UpdateUserInfo>, name:String, image: String, bio: String, month_price: u32) -> Result<()> {
+    pub fn update_user_info(ctx: Context<UpdateUserInfo>, name:String, image: String, cover: String, bio: String, month_price: u32) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
    
@@ -41,6 +42,7 @@ pub mod solana_of {
              
             base_account.users[index].name = name.to_string();
             base_account.users[index].image = image.to_string();
+            base_account.users[index].cover = cover.to_string();
             base_account.users[index].bio = bio.to_string();
             base_account.users[index].month_price = month_price as u64; 
         }
@@ -48,7 +50,7 @@ pub mod solana_of {
         Ok(())
     }
 
-    pub fn become_creator(ctx: Context<BecomeCreator>, name: String, image: String, bio: String, month_price: u32) -> Result<()> {
+    pub fn become_creator(ctx: Context<BecomeCreator>, name: String, image: String, cover: String, bio: String, month_price: u32) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let user = &mut ctx.accounts.user;
 
@@ -56,6 +58,7 @@ pub mod solana_of {
             let user = User {
                 user_address: *user.to_account_info().key,
                 image: "".to_string(),
+                cover: "".to_string(),
                 name: "".to_string(),
                 bio: "".to_string(), 
                 month_price: 1,
@@ -74,6 +77,7 @@ pub mod solana_of {
             
             base_account.users[index].name = name.to_string();
             base_account.users[index].image = image.to_string();
+            base_account.users[index].cover = cover.to_string();
             base_account.users[index].bio = bio.to_string();
             base_account.users[index].month_price = month_price as u64;
             base_account.users[index].creator = true;
@@ -114,6 +118,7 @@ pub mod solana_of {
             let user = User {
                 user_address: *subscriber.to_account_info().key,
                 image: "".to_string(),
+                cover: "".to_string(),
                 name: "".to_string(),
                 bio: "".to_string(), 
                 month_price: 1,
@@ -285,7 +290,8 @@ pub struct Subscription {
 pub struct User {
     pub user_address: Pubkey,
     pub creator: bool, 
-    pub image: String, 
+    pub image: String,
+    pub cover: String,
     pub bio: String, 
     pub month_price: u64,
     pub total: u64,
