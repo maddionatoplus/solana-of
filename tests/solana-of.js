@@ -72,6 +72,32 @@ const main = async() => {
     },
   });
   
+  account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+  console.log('👀 Users', account.users.length)
+  console.log('\t- ', account.users[0])
+  
+  console.log("\tDELETE toplus first content\n")
+  
+  await program.rpc.deleteContent(0, {
+    accounts: {
+      baseAccount: baseAccount.publicKey,
+      user: provider.wallet.publicKey,
+    },
+  });
+  
+  account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+  console.log('👀 Users', account.users.length)
+  console.log('\t- ', account.users[0])
+  
+  console.log("\nADD again toplus first content\n")
+  
+  await program.rpc.addContent("first content", "first title", "first description", {
+    accounts: {
+      baseAccount: baseAccount.publicKey,
+      user: provider.wallet.publicKey,
+    },
+  });
+  
   console.log("\nvote toplus first content\n")
   
   await program.rpc.upVote("first content",{

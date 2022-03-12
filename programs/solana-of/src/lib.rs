@@ -109,6 +109,18 @@ pub mod solana_of {
         Ok(())
     }
 
+    pub fn delete_content(ctx: Context<DeleteContent>, content_index: u32) -> Result<()> {
+        let base_account = &mut ctx.accounts.base_account;
+        let user = &mut ctx.accounts.user;
+   
+        if base_account.users.iter().any(|u| u.user_address == *user.to_account_info().key) {
+            let index = base_account.users.iter().position(|u| u.user_address == *user.to_account_info().key).unwrap();
+            base_account.users[index].contents.remove(content_index as usize);
+        }
+        
+        Ok(())
+    }
+
     pub fn add_subscription(ctx: Context<AddSubscription>) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
         let subscriber = &mut ctx.accounts.subscriber;
@@ -233,6 +245,14 @@ pub struct BecomeCreator<'info> {
 
 #[derive(Accounts)]
 pub struct AddContent<'info> {
+    #[account(mut)]
+    pub base_account: Account<'info, BaseAccount>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DeleteContent<'info> {
     #[account(mut)]
     pub base_account: Account<'info, BaseAccount>,
     #[account(mut)]
